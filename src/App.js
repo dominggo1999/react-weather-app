@@ -1,22 +1,74 @@
-import React from 'react'
-import CardList from './components/CardList/CardList.js'
+import React,{ Component } from 'react'
 import SearchField from './components/SearchField/SearchField.js'
-import './App.scss'
 
-export class App extends React.Component {
+export class App extends Component {
   constructor(props) {
-    super(props)
-  
+    super(props);
+
     this.state = {
-       monsters : [],
-       searchField: ''
+       searchField : '',
+       city : '',
+       time : '',
+       weather : '',
+       desc : '',
+       temp : '',
+       count : 0
     }
   }
 
-  componentDidMount() {
-    fetch('https://jsonplaceholder.typicode.com/users')
-     .then(response => response.json())
-     .then(users => this.setState({monsters : users})) 
+  componentDidMount () {
+      this.getLocation();
+  } 
+
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if(this.state.count > 1){
+       const API_KEY = 'cfaef784e5b4540ea5c23799273b2dfa';
+       const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.state.city}&appid=${API_KEY}`
+       fetch(url)
+        .then(response=>response.json())
+        .then(data=>{
+            this.setState({
+              city : this.state.city,
+              time : 'cari sendiri',
+              weather : data.weather[0].main,
+              desc : data.weather[0].description,
+              temp : (data.main.temp - 273).toFixed(2) + ' deg celcius',
+              count : this.state.count - 1
+            })
+        })
+    }
+  }
+
+  getLocation = ()=>{
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(this.showPosition);
+    } else { 
+      console.log("Geolocation is not supported by this browser.")
+    }
+  }
+
+  showPosition = (position) =>{
+    const lat = position.coords.latitude;
+    const long = position.coords.longitude;
+    const time = new Date(position.timestamp);
+    const API_KEY = 'cfaef784e5b4540ea5c23799273b2dfa';
+
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=${API_KEY}`
+
+    fetch(url)
+      .then(response=>response.json())
+      .then(data=>{
+
+        this.setState({
+          city : data.name,
+          time : time.toLocaleString()  ,
+          weather : data.weather[0].main,
+          desc : data.weather[0].description,
+          temp : (data.main.temp - 273).toFixed(2) + ' deg celcius',
+          count : this.state.count + 1
+        })
+      })
   }
 
   handleChange = (e) =>{
@@ -25,33 +77,33 @@ export class App extends React.Component {
     })
   }
 
-  render() {
-    // const monsters = this.state.monsters;
-    // const searchField = this.state.searchMonster;
-    const{monsters, searchField} = this.state;
+  handleSubmit = (e) =>{
+    e.preventDefault();
 
-    const filteredMonsters = monsters.filter(monster=>{
-      return monster.name.toLowerCase().includes(searchField.toLowerCase());
+    const cityName = (this.state.searchField).toLowerCase();
+    this.setState({
+      city : cityName,
+      count : this.state.count + 1
     })
+  }
 
-    const result = filteredMonsters.length !== 0 ? 
-    <CardList monsters = {filteredMonsters}/>
-    : <h1 className="no-result">Not Found</h1>
-
-
-    return(
-      <div className = "app">
-        <h1 className = "title">Monster Finder</h1>
+  render() {
+    return (
+      <div>
         <SearchField
+          placeholder = "Enter a city"
           type = "search"
-          placeholder = "Monster"
+          handleSubmit = {this.handleSubmit}
           handleChange = {this.handleChange}
         />
-        {result}
+        <p>{this.state.city}</p>
+        <p>{this.state.time}</p>
+        <p>Temperatur : {this.state.temp}</p>
+        <p>{this.state.weather}</p>
+        <p>{this.state.desc}</p>
       </div>
     )
   }
 }
-
 
 export default App
