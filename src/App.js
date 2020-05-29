@@ -1,106 +1,122 @@
 import React,{ Component } from 'react'
+import WeatherDisplay from './components/WeatherDisplay/WeatherDisplay.js'
 import SearchField from './components/SearchField/SearchField.js'
+import './App.scss'
 
-export class App extends Component {
+
+const API_KEY = 'cfaef784e5b4540ea5c23799273b2dfa';
+
+class App extends Component {
   constructor(props) {
-    super(props);
+  	super(props)
+  
+  	this.state = {
+  		 city:'',
+  		 temp : '',
+  		 minTemp : '',
+  		 maxTemp : '',
+  		 description : '',
+  		 iconClass : '',
+  		 err : false ,
+  		 dataReady : false
+  	}
 
-    this.state = {
-       searchField : '',
-       city : '',
-       time : '',
-       weather : '',
-       desc : '',
-       temp : '',
-       count : 0
-    }
+  	this.icons = {
+  		Thunderstorm: "wi-thunderstorm",
+	    Drizzle: "wi-sleet",
+	    Rain: "wi-storm-showers",
+	    Snow: "wi-snow",
+	    Atmosphere: "wi-fog",
+	    Clear: "wi-day-sunny",
+	    Clouds: "wi-day-fog"
+  	}
   }
 
-  componentDidMount () {
-      this.getLocation();
-  } 
+	getWeatherClass = (icons, rangeId) =>{
+		switch (true) {
+		  case rangeId >= 200 && rangeId < 232:
+		    this.setState({ iconClass: icons.Thunderstorm });
+		    break;
+		  case rangeId >= 300 && rangeId <= 321:
+		    this.setState({ iconClass: icons.Drizzle });
+		    break;
+		  case rangeId >= 500 && rangeId <= 521:
+		    this.setState({ iconClass: icons.Rain });
+		    break;
+		  case rangeId >= 600 && rangeId <= 622:
+		    this.setState({ iconClass: icons.Snow });
+		    break;
+		  case rangeId >= 701 && rangeId <= 781:
+		    this.setState({ iconClass: icons.Atmosphere });
+		    break;
+		  case rangeId === 800:
+		    this.setState({ iconClass: icons.Clear });
+		    break;
+		  case rangeId >= 801 && rangeId <= 804:
+		    this.setState({ iconClass: icons.Clouds });
+		    break;
+		  default:
+		    this.setState({ iconClass: icons.Clouds });
+		}
+	}
+
+	changeToCelcius = (t) => Math.floor(t - 273.15);
 
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if(this.state.count > 1){
-       const API_KEY = 'cfaef784e5b4540ea5c23799273b2dfa';
-       const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.state.city}&appid=${API_KEY}`
-       fetch(url)
-        .then(response=>response.json())
-        .then(data=>{
-            this.setState({
-              city : this.state.city,
-              time : 'cari sendiri',
-              weather : data.weather[0].main,
-              desc : data.weather[0].description,
-              temp : (data.main.temp - 273).toFixed(2) + ' deg celcius',
-              count : this.state.count - 1
-            })
-        })
-    }
-  }
+ 	handleSubmit = (e) =>{
+  	e.preventDefault();
+	  	const city = e.target.querySelector(".city-input");
+	  	const country = e.target.querySelector(".country-input");
 
-  getLocation = ()=>{
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(this.showPosition);
-    } else { 
-      console.log("Geolocation is not supported by this browser.")
-    }
-  }
+	  	if(city.value && country.value){
+			const url = `https://api.openweathermap.org/data/2.5/weather?q=${city.value},${country.value}}&appid=${API_KEY}`;
+			
+			fetch(url)
+				.then(response=>response.json())
+				.then(data=>{
+					console.log(data.weather);
+					this.setState({
+						city : `${data.name}, ${data.sys.country}`,
+						temp : this.changeToCelcius(data.main.temp),
+						minTemp : this.changeToCelcius(data.main.temp_min),
+						maxTemp : this.changeToCelcius(data.main.temp_max),
+						description :  data.weather[0].description,
+						dataReady : true,
+						err : false
+					})
 
-  showPosition = (position) =>{
-    const lat = position.coords.latitude;
-    const long = position.coords.longitude;
-    const time = new Date(position.timestamp);
-    const API_KEY = 'cfaef784e5b4540ea5c23799273b2dfa';
+					// Get weather class
+					this.getWeatherClass(this.icons, data.weather[0].id);
 
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=${API_KEY}`
-
-    fetch(url)
-      .then(response=>response.json())
-      .then(data=>{
-
-        this.setState({
-          city : data.name,
-          time : time.toLocaleString()  ,
-          weather : data.weather[0].main,
-          desc : data.weather[0].description,
-          temp : (data.main.temp - 273).toFixed(2) + ' deg celcius',
-          count : this.state.count + 1
-        })
-      })
-  }
-
-  handleChange = (e) =>{
-    this.setState({
-      searchField : e.target.value
-    })
-  }
-
-  handleSubmit = (e) =>{
-    e.preventDefault();
-
-    const cityName = (this.state.searchField).toLowerCase();
-    this.setState({
-      city : cityName,
-      count : this.state.count + 1
-    })
-  }
+					city.value = "";
+					country.value = "";
+				})
+				.catch(err=>{
+					this.setState({
+						err : true
+					})
+				})
+	  	}
+  	}
 
   render() {
     return (
       <div>
-        <SearchField
-          placeholder = "Enter a city"
-          type = "search"
-          handleSubmit = {this.handleSubmit}
-          handleChange = {this.handleChange}
-        />
-        <p>{this.state.city}</p>
-        <p>{this.state.time}</p>
-        <p>Temperatur : {this.state.temp}</p>
-        <p>{this.state.weather}</p>
-        <p>{this.state.desc}</p>
+      	<SearchField
+      		type = 'text'
+      		placeholder = "Enter"
+      		handleSubmit = {this.handleSubmit}
+      	/>
+		<WeatherDisplay
+	    	city = {this.state.city}
+	    	iconClass = {this.state.iconClass}
+	    	temp = {this.state.temp}
+	    	minTemp = {this.state.minTemp}
+	    	maxTemp = {this.state.maxTemp}
+	    	description = {this.state.description}
+	    	dataReady = {this.state.dataReady}
+	    	err = {this.state.err}
+    	/>
       </div>
     )
   }

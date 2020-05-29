@@ -1,21 +1,13 @@
-body{
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&display=swap');
+
+
+*{
 	margin:0;
 	padding: 0;
 	box-sizing: border-box;
-	background: rgb(2,0,36); 
-	background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(25,106,112,1) 39%, rgba(0,137,164,1) 100%);
+	font-family: 'Oswald', sans-serif;
 }
 
-.app{
-	.title{
-		text-align: center;
-		color: #fff;
-		margin:0 auto;
-	}
-
-	.no-result{
-		text-align: center;
-		color: #fff;
-	}
+body{
+	background: #01283F;
 }
-

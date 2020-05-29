@@ -1,15 +1,21 @@
 import React from 'react'
+import './SearchField.scss'
 
-const SearchField = ({placeholder,type,handleSubmit,handleChange}) => {
+const SearchField = ({type,placeholder,handleSubmit}) => {
 	return (
-		<div>
-			<form onSubmit={handleSubmit}>
+		<div className = "search-weather">
+			<form onSubmit = {handleSubmit}>
 				<input 
-					type={type} 
-					placeholder={placeholder}
-					onChange = {handleChange}
+					className = "city-input"
+					type={type}
+					placeholder={`${placeholder} a city`}
 				/>
-				<button type= 'submit'>Search</button>
+				<input 
+					className = "country-input"
+					type={type}
+					placeholder={`${placeholder} a country`}
+				/>
+				<button type="submit">Search</button>
 			</form>
 		</div>
 	)
