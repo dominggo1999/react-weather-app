@@ -1,87 +1,98 @@
 import React,{ Component } from 'react'
 import './App.scss'
-import SearchField from './components/SearchField/SearchField.js'
-import ImagesList from './components/ImagesList/ImagesList.js'
 
-
-const API_KEY = "XpLtXZaW460S37c-bE2wiTZV-NXgv6v2oa0fDOQrOFg";
-
+const checkInput = /^[0-9]*$/;
 class App extends Component {
 	constructor(props) {
 		super(props)
-	
+
 		this.state = {
-			images: [],
-			input : "",
-			noData : true,
-			page : 0,
-			query : ""
+			 celcius : "",
+			 fahrenheit : "",
+			 reaumur : "",
+			 kelvin : ""
+		}
+		this.fahrenheitRef = React.createRef();
+		this.celciusRef = React.createRef();
+	}
+
+	convertFunctCelcius = (e) =>{
+		const input = e.target.value.trim();
+		const convert = () =>{
+			const c = parseInt(input);
+			const f = c * 1.8 + 32;
+			const re = c * 0.8;
+			const k = c + 273.15;
+			this.setState({
+				celcius : c,
+			 	fahrenheit : f,
+				reaumur : re,
+			 	kelvin : k
+			},()=>{
+				console.log(this.state);
+				this.fahrenheitRef.current._reactInternalFiber.child.child.stateNode.value = this.state.fahrenheit;
+			})
+		}
+
+		if(input.match(checkInput) && input.length){
+			convert();
 		}
 	}
 
-	handleChange = (e) =>{
-		this.setState({input : e.target.value.toLowerCase()})}
-
-	handleSubmit = (e) =>{
-		e.preventDefault();
-		const query = this.state.input;
-		const url = `https://api.unsplash.com/search/photos?page=1&query=${query}&client_id=${API_KEY}`;
-		
-		const getImage = () => fetch(url)
-			.then(response =>response.json())
-			.then(data => {
-				this.setState({
-					images : data.results,
-					noData : false,
-					page : 1,
-					query : query
-				})
+	convertFunctFahrenheit = (e) =>{
+		const input = e.target.value.trim();
+		const convert = () =>{
+			const f = parseInt(input);
+			const c = (f - 32) * 5/9;
+			const re = c * 0.8;
+			const k = c + 273.15;
+			this.setState({
+				celcius : 	c,
+			 	fahrenheit : f,
+				reaumur : re,
+			 	kelvin : k
+			},()=>{
+				console.log(this.state);
+				this.celciusRef.current._reactInternalFiber.child.child.stateNode.value = this.state.celcius;
 			})
-			.catch(err=>{
-				console.log(err);
-			})
+		}
 
-		if(query){getImage()}
-	}
-
-	findAnotherImages = (e) =>{
-		const nextPage = this.state.page + 1;
-		const query = this.state.query;
-		const url = `https://api.unsplash.com/search/photos?page=${nextPage}&query=${query}&client_id=${API_KEY}`;
-
-		const getImage = () => fetch(url)
-			.then(response =>response.json())
-			.then(data => {
-				this.setState({
-					images : data.results,
-					noData : false,
-					page : nextPage
-				})
-
-				console.log(this.state.page);
-			})
-			.catch(err=>{
-				console.log(err);
-			})
-
-		if(query){getImage()}
-	}		
+		if(input.match(checkInput) && input.length){
+			convert();
+		}
+	} 
 
 	render(){
-		return (
+		return(
 			<div>
-				<SearchField 
-					handleChange = {this.handleChange}
-					handleSubmit = {this.handleSubmit}
-					type={"text"} 
-					placeholder ={"Find image"}
-					findAnotherImages = {this.findAnotherImages}
-				/>
-				<ImagesList images ={this.state.images} noData = {this.state.noData}/>
+				<SearchField ref={this.celciusRef} type="text" placeholder="C" convertFunct = {this.convertFunctCelcius}/>
+				<SearchField ref={this.fahrenheitRef} type="text" placeholder="F" convertFunct = {this.convertFunctFahrenheit}/>
 			</div>
 		)
 	}
 }
 
-export default App
+
+// const SearchField = ({type,placeholder,convertFunct}) =>{
+// 	return(
+// 		<div>
+// 			<input className="celcius-input" type={type} placeholder={placeholder} onChange={convertFunct}/>
+// 		</div>
+// 	)
+// }
+
+
+class SearchField extends React.Component {
+	
+	render() {
+		return (
+			<div>
+				<input className="celcius-input" type={this.props.type} placeholder={this.props.placeholder} onChange={this.props.convertFunct}/>
+			</div>
+		)
+	}
+}
+
+
+export default App 
 
