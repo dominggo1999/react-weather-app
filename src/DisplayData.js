@@ -5,10 +5,11 @@ import dateformat from 'dateformat'
 const DisplayData = ({ data }) => {
 
 	const now = new Date();
-	const date = dateformat(now,"dddd, mmmm d")
+	const date = dateformat(now,"dddd, mmmm d");
 
 
 	if(data && !data.error){
+		const logoCode = data.current.condition.code - 887;
 		const city = data.location.name;
 		const country = data.location.country;
 		const temp = data.current.temp_c;
@@ -16,7 +17,7 @@ const DisplayData = ({ data }) => {
 		return (
 			<div className="display-data">
 				<div className="top">
-					<i class="logo wi wi-night-alt-partly-cloudy"></i>
+					<img className="logo" src={`./weather/${logoCode}.png`} alt="X"/>
 					<div className="description">
 						<div className="location">{city}, {country}</div>
 						<div className="time">{date}</div>
